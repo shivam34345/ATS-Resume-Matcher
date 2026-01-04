@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Matcher</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f6f7fb;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .container {
+            background: #ffffff;
+            width: 420px;
+            padding: 32px;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #111827;
+            text-align: center;
+        }
+
+        p {
+            margin: 0 0 20px;
+            font-size: 14px;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px dashed #d1d5db;
+            border-radius: 10px;
+            background: #fafafa;
+            margin-bottom: 18px;
+            cursor: pointer;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            background: #6366f1;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .score-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .score-box p {
+            margin: 6px 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .skills-section h3 {
+            font-size: 15px;
+            margin: 14px 0 6px;
+            color: #111827;
+        }
+
+        .skills-section p {
+            font-size: 13px;
+            color: #374151;
+            text-align: left;
+        }
+
+        .badge {
+            background: #eef2ff;
+            color: #4338ca;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 4px 4px 0 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <!-- UPLOAD BOX -->
+    <div class="container">
+        <h1>ATS Resume Matcher</h1>
+        <p>Upload resume and job description</p>
+
+        <form method="POST" enctype="multipart/form-data">
+            <label>Resume (PDF)</label>
+            <input type="file" name="resume_pdf" accept=".pdf" required>
+
+            <label>Job Description (PDF)</label>
+            <input type="file" name="jd_pdf" accept=".pdf" required>
+
+            <input type="submit" value="Check Match">
+        </form>
+    </div>
+
+    <!-- RESULT BOX -->
+  {% if request.method == 'POST' %}
+
+<div class="container">
+
+    <div class="score-box">
+        <p><strong>Semantic Similarity:</strong> {{ semantic_score }}%</p>
+        <p><strong>Skill Match:</strong> {{ skill_match_pct }}%</p>
+        <p><strong>Final ATS Score:</strong> {{ final_score }}%</p>
+        <p>{{ level }}</p>
+    </div>
+
+    <div class="skills-section">
+        <h3>Your Skills</h3>
+        {% for skill in resume_skills %}
+            <span class="badge">{{ skill }}</span>
+        {% endfor %}
+
+        <h3>Company Requirements</h3>
+        {% for skill in jd_skills %}
+            <span class="badge">{{ skill }}</span>
+        {% endfor %}
+
+        <h3>Matched Skills</h3>
+        {% for skill in matched_skills %}
+            <span class="badge">{{ skill }}</span>
+        {% endfor %}
+
+        <h3>Missing Skills</h3>
+        {% for skill in missing_skills %}
+            <span class="badge">{{ skill }}</span>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endif %}
+
+
+</div>
+
+</body>
+</html>

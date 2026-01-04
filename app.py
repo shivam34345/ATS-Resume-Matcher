@@ -1,9 +1,10 @@
 from flask import *
-from PyPDF2 import PdfReader
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import spacy
 import re
+from pypdf import PdfReader
 
 # ---------------- CONFIG ---------------- #
 
@@ -16,7 +17,7 @@ SKILL_KEYWORDS = {
     "java", "c++", "c", "linux"
 }
 
-nlp = spacy.load("en_core_web_lg")
+nlp = spacy.load("en_core_web_sm")
 app = Flask(__name__)
 
 # ---------------- UTILS ---------------- #

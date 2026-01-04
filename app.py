@@ -1,10 +1,12 @@
 from flask import *
-
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import spacy
-import re
 from pypdf import PdfReader
+import re
+import math
+from collections import Counter
+
+app = Flask(__name__)
 
 # ---------------- CONFIG ---------------- #
 
@@ -12,13 +14,10 @@ SKILL_KEYWORDS = {
     "python", "flask", "django", "react", "node", "express", "mern",
     "javascript", "html", "css", "sql", "mongodb", "mysql",
     "machine learning", "deep learning", "nlp", "data science",
-    "pandas", "numpy", "scikit-learn", "tensorflow", "pytorch",
+    "pandas", "numpy", "scikit-learn",
     "git", "github", "docker", "aws", "api", "rest",
     "java", "c++", "c", "linux"
 }
-
-nlp = spacy.load("en_core_web_sm")
-app = Flask(__name__)
 
 # ---------------- UTILS ---------------- #
 
@@ -26,41 +25,24 @@ def extract_text_pdf(pdf):
     reader = PdfReader(pdf)
     text = ""
     for page in reader.pages:
-        if page.extract_text():
-            text += page.extract_text()
+        page_text = page.extract_text()
+        if page_text:
+            text += page_text + " "
     return text
 
 
 def clean_fun(text):
     text = text.lower()
     text = re.sub(r"http\S+|www\S+|@\S+|\d+", " ", text)
-
-    doc = nlp(text)
-    tokens = [
-        token.lemma_
-        for token in doc
-        if not token.is_stop and not token.is_punct
-    ]
+    tokens = re.findall(r"\b[a-z]+\b", text)
     return " ".join(tokens)
 
 
 def extract_skills(text):
     text = text.lower()
     text = re.sub(r"http\S+|www\S+|@\S+|\d+", " ", text)
-
-    doc = nlp(text)
-    found = set()
-
-    for chunk in doc.noun_chunks:
-        skill = chunk.text.strip()
-        if skill in SKILL_KEYWORDS:
-            found.add(skill)
-
-    for token in doc:
-        if token.text in SKILL_KEYWORDS:
-            found.add(token.text)
-
-    return sorted(found)
+    tokens = re.findall(r"\b[a-z][a-z\+\#]+\b", text)
+    return sorted(set(tokens) & SKILL_KEYWORDS)
 
 # ---------------- ROUTE ---------------- #
 
@@ -77,7 +59,7 @@ def home():
         clean_resume = clean_fun(resume_text)
         clean_jd = clean_fun(jd_text)
 
-        # Semantic similarity
+        # Semantic similarity (TF-IDF)
         vectorizer = TfidfVectorizer()
         vectors = vectorizer.fit_transform([clean_resume, clean_jd])
         semantic_score = cosine_similarity(vectors[0], vectors[1])[0][0] * 100
